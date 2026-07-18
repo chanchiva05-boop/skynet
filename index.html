@@ -1007,7 +1007,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             backdrop-filter: blur(10px);
         }
         .login-telegram-btn:hover {
@@ -1020,7 +1020,10 @@
             transform: translateY(1px);
         }
         .login-telegram-btn .telegram-icon {
-            font-size: 16px;
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            flex-shrink: 0;
         }
         .login-telegram-btn .telegram-text {
             font-size: 12px;
@@ -1110,9 +1113,14 @@
             .login-telegram-btn {
                 padding: 6px 16px;
                 font-size: 12px;
+                gap: 6px;
             }
             .login-telegram-btn .telegram-text {
                 font-size: 11px;
+            }
+            .login-telegram-btn .telegram-icon {
+                width: 16px;
+                height: 16px;
             }
         }
         @supports (display: standalone) {
@@ -1144,9 +1152,9 @@
                 <span>កំពុងផ្ទៀងផ្ទាត់...</span>
             </div>
             <div class="login-error" id="loginError"></div>
-            <!-- Telegram contact button - small & elegant -->
+            <!-- Telegram contact button with icon from Icons8 -->
             <button class="login-telegram-btn" onclick="window.open('https://t.me/matin_9999', '_blank')">
-                <span class="telegram-icon">✈️</span>
+                <img class="telegram-icon" src="https://img.icons8.com/?size=24&id=5mIvDYZUWDCF&format=png&color=FFFFFF" alt="Telegram">
                 <span class="telegram-text">Contact Telegram</span>
             </button>
             <div class="login-device-info">⚡ ពាក្យសម្ងាត់របស់អ្នកមិនអាចប្រើនៅលើឧបករណ៍ផ្សេងបានទេ 🤫</div>
