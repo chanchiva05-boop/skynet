@@ -989,6 +989,36 @@
             color: #666;
             margin-top: 10px;
         }
+        /* Telegram button style */
+        .login-telegram-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0088cc, #0077b5);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Khmer OS Battambang', 'Times New Roman', Times, serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 136, 204, 0.3);
+            letter-spacing: 1px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .login-telegram-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 136, 204, 0.5);
+            background: linear-gradient(135deg, #0099dd, #0088cc);
+        }
+        .login-telegram-btn:active {
+            transform: translateY(1px);
+        }
         @media (max-width: 500px) {
             .glass-panel {
                 max-width: 380px;
@@ -1071,6 +1101,10 @@
                 min-height: 30px;
                 padding: 8px 12px;
             }
+            .login-telegram-btn {
+                font-size: 15px;
+                padding: 14px;
+            }
         }
         @supports (display: standalone) {
             body {
@@ -1101,6 +1135,10 @@
                 <span>កំពុងផ្ទៀងផ្ទាត់...</span>
             </div>
             <div class="login-error" id="loginError"></div>
+            <!-- Telegram contact button -->
+            <button class="login-telegram-btn" onclick="window.open('https://t.me/matin_9999', '_blank')">
+                <span>📲</span> ទាក់ទងតាម Telegram
+            </button>
             <div class="login-device-info">⚡ ពាក្យសម្ងាត់របស់អ្នកមិនអាចប្រើនៅលើឧបករណ៍ផ្សេងបានទេ 🤫</div>
             <div class="login-shield">🛡️ SECURE DEVICE LOCK</div>
         </div>
