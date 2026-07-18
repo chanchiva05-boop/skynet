@@ -1,152 +1,26 @@
-const CACHE_NAME = 'teva-v10';
+const CACHE_NAME = 'teva-v18'; // ប្ដូរ version ដើម្បីបង្ខំឲ្យ Update Cache
 const urlsToCache = [
   './',
   './index.html',
-  './METFONE.txt',
-  './CELLCARD.txt',
-  './METFONE1.txt',
-  './TOOR.txt',
   './teva.png'
 ];
 
-// Install Service Worker
+// ===== INSTALL =====
 self.addEventListener('install', event => {
   console.log('Service Worker installing...', CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Caching files...');
+        console.log('Caching static assets...');
         return cache.addAll(urlsToCache);
       })
+      .then(() => {
+        return self.skipWaiting();
+      })
   );
-  self.skipWaiting();
 });
 
-// Network First - ALWAYS try network first for txt files
-async function networkFirst(request) {
-  try {
-    let fetchUrl = request.url;
-    if (fetchUrl.includes('METFONE.txt') || 
-        fetchUrl.includes('CELLCARD.txt') || 
-        fetchUrl.includes('METFONE1.txt') ||
-        fetchUrl.includes('TOOR.txt')) {
-      fetchUrl = fetchUrl.split('?')[0] + '?_=' + Date.now();
-    }
-    
-    const response = await fetch(fetchUrl, { 
-      cache: 'no-store',
-      headers: { 
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache'
-      }
-    });
-    
-    if (response && response.status === 200) {
-      const responseToCache = response.clone();
-      const cache = await caches.open(CACHE_NAME);
-      const originalUrl = request.url.split('?')[0];
-      await cache.put(originalUrl, responseToCache);
-      console.log('🔄 Updated cache:', originalUrl);
-      
-      const clients = await self.clients.matchAll();
-      clients.forEach(client => {
-        client.postMessage({ 
-          type: 'contentUpdated', 
-          file: originalUrl,
-          timestamp: Date.now()
-        });
-      });
-      
-      return response;
-    }
-    throw new Error('Network failed');
-  } catch (error) {
-    console.log('📦 Offline or network error, using cache:', request.url);
-    const originalUrl = request.url.split('?')[0];
-    const cachedResponse = await caches.match(originalUrl);
-    if (cachedResponse) {
-      console.log('✅ Found cached version for:', originalUrl);
-      return cachedResponse;
-    }
-    
-    // Fallback for txt files
-    if (originalUrl.includes('METFONE.txt')) {
-      console.log('⚠️ Using fallback for METFONE.txt');
-      return new Response('កាកម៉េសហ្អា', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-    }
-    if (originalUrl.includes('CELLCARD.txt')) {
-      console.log('⚠️ Using fallback for CELLCARD.txt');
-      return new Response('TEVA555', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-    }
-    if (originalUrl.includes('METFONE1.txt')) {
-      console.log('⚠️ Using fallback for METFONE1.txt');
-      return new Response('កាកម៉េសហ្អា1', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-    }
-    if (originalUrl.includes('TOOR.txt')) {
-      console.log('⚠️ Using fallback for TOOR.txt');
-      return new Response('[{"password":"TEVA","fingerprint":""}]', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-    }
-    return new Response('Offline', { status: 503 });
-  }
-}
-
-// Network First for HTML
-async function htmlNetworkFirst(request) {
-  try {
-    const response = await fetch(request, { 
-      cache: 'no-store',
-      headers: { 
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
-      }
-    });
-    
-    if (response && response.status === 200) {
-      const responseToCache = response.clone();
-      const cache = await caches.open(CACHE_NAME);
-      await cache.put(request, responseToCache);
-      console.log('🔄 Updated HTML cache');
-      return response;
-    }
-    throw new Error('Network failed');
-  } catch (error) {
-    console.log('📦 Using cached HTML');
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) return cachedResponse;
-    return new Response('Page not available offline', { status: 503 });
-  }
-}
-
-// Cache First for static assets
-function cacheFirst(request) {
-  return caches.match(request)
-    .then(response => {
-      if (response) {
-        console.log('✅ Cache hit for:', request.url);
-        return response;
-      }
-      return fetch(request);
-    });
-}
-
-// Handle fetch events
-self.addEventListener('fetch', event => {
-  const url = event.request.url;
-  
-  if (url.includes('METFONE.txt') || 
-      url.includes('CELLCARD.txt') || 
-      url.includes('METFONE1.txt') ||
-      url.includes('TOOR.txt')) {
-    event.respondWith(networkFirst(event.request));
-  }
-  else if (url.includes('index.html') || url === './' || event.request.mode === 'navigate') {
-    event.respondWith(htmlNetworkFirst(event.request));
-  }
-  else {
-    event.respondWith(cacheFirst(event.request));
-  }
-});
-
-// Activate and clean old caches
+// ===== ACTIVATE =====
 self.addEventListener('activate', event => {
   console.log('Service Worker activating...', CACHE_NAME);
   event.waitUntil(
@@ -154,7 +28,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+            console.log('🗑️ Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -166,132 +40,64 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Listen for messages from main page
-self.addEventListener('message', async (event) => {
-  console.log('📨 Received message:', event.data);
-  
-  if (event.data === 'forceUpdate') {
-    console.log('📡 Force update triggered - clearing txt caches');
-    const cache = await caches.open(CACHE_NAME);
-    
-    await cache.delete('./METFONE.txt');
-    await cache.delete('METFONE.txt');
-    await cache.delete('./CELLCARD.txt');
-    await cache.delete('CELLCARD.txt');
-    await cache.delete('./METFONE1.txt');
-    await cache.delete('METFONE1.txt');
-    await cache.delete('./TOOR.txt');
-    await cache.delete('TOOR.txt');
-    
-    console.log('✅ Cleared txt files from cache');
-    
-    const clients = await self.clients.matchAll();
-    clients.forEach(client => {
-      client.postMessage({ type: 'refreshContent', source: 'sw' });
-    });
-  }
-  
-  if (event.data === 'checkUpdates') {
-    console.log('🔍 Checking for updates...');
-    const cache = await caches.open(CACHE_NAME);
-    let hasUpdates = false;
-    
-    const txtFiles = ['./METFONE.txt', './CELLCARD.txt', './METFONE1.txt', './TOOR.txt'];
-    for (const file of txtFiles) {
-      try {
-        const response = await fetch(file + '?_=' + Date.now(), {
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' }
-        });
-        if (response && response.ok) {
-          const cachedResponse = await cache.match(file);
-          const newContent = await response.text();
-          
-          if (cachedResponse) {
-            const oldContent = await cachedResponse.text();
-            if (oldContent !== newContent) {
-              hasUpdates = true;
-              console.log('🔄 Content changed for:', file);
-            }
-          } else {
-            hasUpdates = true;
-          }
-          
-          await cache.put(file, response.clone());
-          console.log('🔄 Updated:', file);
-        }
-      } catch (err) {
-        console.log('⚠️ Failed to update:', file);
+// ===== STRATEGIES =====
+// Network First - សម្រាប់ HTML និង Navigation
+async function networkFirst(request) {
+  try {
+    console.log('🌐 Fetching from network:', request.url);
+    const response = await fetch(request, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       }
-    }
-    
-    const clients = await self.clients.matchAll();
-    clients.forEach(client => {
-      client.postMessage({ 
-        type: 'updatesChecked', 
-        source: 'sw',
-        hasUpdates: hasUpdates,
-        timestamp: Date.now()
-      });
     });
-  }
-});
 
-// Periodic background sync
-self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'update-content') {
-    event.waitUntil(updateContentInBackground());
-  }
-});
-
-async function updateContentInBackground() {
-  console.log('🔄 Background sync: updating content');
-  const cache = await caches.open(CACHE_NAME);
-  let hasUpdates = false;
-  
-  const filesToUpdate = ['./METFONE.txt', './CELLCARD.txt', './METFONE1.txt', './TOOR.txt'];
-  
-  for (const file of filesToUpdate) {
-    try {
-      const response = await fetch(file + '?_=' + Date.now(), {
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' }
-      });
-      if (response && response.ok) {
-        const cachedResponse = await cache.match(file);
-        const newContent = await response.text();
-        
-        if (cachedResponse) {
-          const oldContent = await cachedResponse.text();
-          if (oldContent !== newContent) {
-            hasUpdates = true;
-            console.log('🔄 Background update - content changed:', file);
-          }
-        }
-        
-        await cache.put(file, response.clone());
-        console.log('🔄 Background updated:', file);
-      }
-    } catch (err) {
-      console.log('⚠️ Background update failed for:', file);
+    if (response && response.status === 200) {
+      const responseToCache = response.clone();
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, responseToCache);
+      return response;
     }
-  }
-  
-  if (hasUpdates) {
-    const clients = await self.clients.matchAll();
-    clients.forEach(client => {
-      client.postMessage({ 
-        type: 'backgroundUpdate', 
-        source: 'sw',
-        timestamp: Date.now()
-      });
-    });
+    throw new Error('Network failed');
+  } catch (error) {
+    console.log('📡 Network error – try cache fallback for:', request.url);
+    const cached = await caches.match(request);
+    if (cached) {
+      console.log('✅ Returning cached version');
+      return cached;
+    }
+    return new Response('Network required', { status: 503 });
   }
 }
 
-// Auto-update Service Worker
-self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('sw.js')) {
+// Cache First - សម្រាប់ Static Assets (CSS, JS, Images)
+function cacheFirst(request) {
+  return caches.match(request)
+    .then(response => {
+      if (response) {
+        console.log('✅ Cache hit for:', request.url);
+        return response;
+      }
+      return fetch(request);
+    });
+}
+
+// ===== FETCH =====
+self.addEventListener('fetch', event => {
+  const url = event.request.url;
+
+  // **លែងប្រើ SKYNET.txt និងឯកសារ txt ផ្សេងៗ** – អនុញ្ញាតឲ្យ fetch ធម្មតា
+  // ប៉ុន្តែបើចង់ទប់ស្កាត់ការចាប់យកឯកសារ txt ទាំងនោះ យើងអាចទុកចោល ឬបញ្ជូនទៅ network ធម្មតា
+  // ឥឡូវយើងឲ្យវាឆ្លងកាត់ដូចឯកសារដទៃ
+
+  // បើជា index.html ឬ Navigation Request → ប្រើ Network First
+  if (url.includes('index.html') || url === './' || event.request.mode === 'navigate') {
+    event.respondWith(networkFirst(event.request));
+  }
+  // បើជា sw.js ខ្លួនឯង → ប្រើ Network First (មិន Cache)
+  else if (url.includes('sw.js')) {
     event.respondWith(
       fetch(event.request, {
         cache: 'no-store',
@@ -299,14 +105,34 @@ self.addEventListener('fetch', (event) => {
       })
     );
   }
+  // ឯកសារផ្សេងទៀត → Cache First
+  else {
+    event.respondWith(cacheFirst(event.request));
+  }
 });
 
-// Handle controller change
+// ===== MESSAGE HANDLER (សម្រាប់ Clear Cache) =====
+self.addEventListener('message', async (event) => {
+  console.log('📨 Received message:', event.data);
+
+  if (event.data === 'clearAllCache') {
+    console.log('🧹 Clearing ALL cache...');
+    const cache = await caches.open(CACHE_NAME);
+    const keys = await cache.keys();
+    for (const request of keys) {
+      await cache.delete(request);
+      console.log('🗑️ Deleted:', request.url);
+    }
+    console.log('✅ All cache cleared');
+
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({ type: 'cacheCleared', source: 'sw' });
+    });
+  }
+});
+
+// ===== CONTROLLER CHANGE =====
 self.addEventListener('controllerchange', () => {
   console.log('🔄 Service Worker controller changed');
-  self.clients.matchAll().then(clients => {
-    clients.forEach(client => {
-      client.postMessage({ type: 'swUpdated', source: 'sw' });
-    });
-  });
 });
