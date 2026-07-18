@@ -989,35 +989,41 @@
             color: #666;
             margin-top: 10px;
         }
-        /* Telegram button style */
+        /* Telegram button style - smaller & elegant */
         .login-telegram-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #0088cc, #0077b5);
-            border: none;
+            width: auto;
+            padding: 8px 20px;
+            background: rgba(0, 136, 204, 0.15);
+            border: 1px solid rgba(0, 136, 204, 0.35);
             border-radius: 30px;
-            color: #fff;
-            font-size: 18px;
-            font-weight: 700;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            font-weight: 500;
             font-family: 'Khmer OS Battambang', 'Times New Roman', Times, serif;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 136, 204, 0.3);
-            letter-spacing: 1px;
-            margin-top: 8px;
-            margin-bottom: 8px;
-            display: flex;
+            letter-spacing: 0.5px;
+            margin: 6px auto 4px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 6px;
+            backdrop-filter: blur(10px);
         }
         .login-telegram-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 136, 204, 0.5);
-            background: linear-gradient(135deg, #0099dd, #0088cc);
+            background: rgba(0, 136, 204, 0.25);
+            border-color: rgba(0, 136, 204, 0.6);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.2);
         }
         .login-telegram-btn:active {
             transform: translateY(1px);
+        }
+        .login-telegram-btn .telegram-icon {
+            font-size: 16px;
+        }
+        .login-telegram-btn .telegram-text {
+            font-size: 12px;
         }
         @media (max-width: 500px) {
             .glass-panel {
@@ -1102,8 +1108,11 @@
                 padding: 8px 12px;
             }
             .login-telegram-btn {
-                font-size: 15px;
-                padding: 14px;
+                padding: 6px 16px;
+                font-size: 12px;
+            }
+            .login-telegram-btn .telegram-text {
+                font-size: 11px;
             }
         }
         @supports (display: standalone) {
@@ -1135,9 +1144,10 @@
                 <span>កំពុងផ្ទៀងផ្ទាត់...</span>
             </div>
             <div class="login-error" id="loginError"></div>
-            <!-- Telegram contact button -->
+            <!-- Telegram contact button - small & elegant -->
             <button class="login-telegram-btn" onclick="window.open('https://t.me/matin_9999', '_blank')">
-                <span>📲</span> ទាក់ទងតាម Telegram
+                <span class="telegram-icon">✈️</span>
+                <span class="telegram-text">Contact Telegram</span>
             </button>
             <div class="login-device-info">⚡ ពាក្យសម្ងាត់របស់អ្នកមិនអាចប្រើនៅលើឧបករណ៍ផ្សេងបានទេ 🤫</div>
             <div class="login-shield">🛡️ SECURE DEVICE LOCK</div>
